@@ -1,8 +1,8 @@
 const express = require('express')
-const multer = require('multer')
 const sharp = require('sharp')
 const User = require('../models/user')
 const auth = require('../middleware/auth')
+const { upload } = require('../middleware/upload')
 const { sendWelcomeEmail, sendCancelationEmail } = require('../emails/account')
 const router = new express.Router()
 
@@ -60,7 +60,7 @@ router.get('/users/me', auth, async (req, res) => {         //READ ALL
     res.send(req.user)
 })
 
-router.get('/users/:id', async (req, res) => {         //READ ONE
+router.get('/users/:id', async (req, res) => {         //READ ONE, Not in use (We are not expected that someone will got user id)
     const _id = req.params.id
     try {
         const user = await User.findById(_id)
@@ -105,18 +105,6 @@ router.delete('/users/me', auth, async (req, res) => {          //DELETE
     }
 })
 
-const upload = multer({
-    limits: {
-        fileSize: 1000000
-    },
-    fileFilter(req, file, cb) {
-        if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
-            return cb(new Error('Please upload an image'))
-        }
-        cb(undefined, true)
-    }
-
-})
 router.post('/users/me/avatar', auth, upload.single('avatar'), async (req, res) => {
     const buffer = await sharp(req.file.buffer).resize({ width: 200, height: 250 }).png().toBuffer()
 
